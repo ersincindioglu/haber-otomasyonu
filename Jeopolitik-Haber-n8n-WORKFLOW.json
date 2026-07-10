@@ -1,0 +1,751 @@
+{
+  "name": "Jeopolitik Trend Arastirma v1",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "3290f641-54ba-4e42-9452-d86a3eba2f55",
+      "name": "Gunluk Tetik 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -608,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (X11; Linux x86_64) JeoTrendBot/1.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 20000
+        }
+      },
+      "id": "c8246c76-c883-4c85-bd06-69cae2dc1f4d",
+      "name": "Kaynak BBC",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        64
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "id": "d8318903-7596-4904-818a-cba23f6ad876",
+      "name": "Kaynaklari Birlestir",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -64,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.theguardian.com/world/rss",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (X11; Linux x86_64) JeoTrendBot/1.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 20000
+        }
+      },
+      "id": "b60ec08c-f84b-4c73-bce7-4df224a6c05e",
+      "name": "Kaynak Guardian",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        192
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.aljazeera.com/xml/rss/all.xml",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (X11; Linux x86_64) JeoTrendBot/1.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 20000
+        }
+      },
+      "id": "60dfbf23-831c-443f-bd18-19a1fe243196",
+      "name": "Kaynak Al Jazeera",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        304
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.aa.com.tr/en/rss/default?cat=world",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (X11; Linux x86_64) JeoTrendBot/1.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 20000
+        }
+      },
+      "id": "192224be-0dd7-4ea1-94f5-fa26320f6978",
+      "name": "Kaynak AA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        432
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://trends.google.com/trending/rss?geo=TR",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (X11; Linux x86_64) JeoTrendBot/1.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 20000
+        }
+      },
+      "id": "36b1ebaa-5003-4654-861f-ae920405b0b3",
+      "name": "Kaynak Google Trends",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        544
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const UA='Mozilla/5.0 (compatible; JeoTrendBot/1.0)';\nfunction grab(name){ try{ const it=$(name).first(); return (it && it.json && typeof it.json.data==='string') ? it.json.data : ''; }catch(e){ return ''; } }\nfunction decode(s){ return (s||'').replace(/<!\\[CDATA\\[/g,'').replace(/\\]\\]>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'\"').replace(/&#0?39;/g,\"'\").replace(/&apos;/g,\"'\").replace(/&#(\\d+);/g,function(m,n){ return String.fromCharCode(parseInt(n,10)); }).replace(/<[^>]+>/g,' ').replace(/\\s+/g,' ').trim(); }\nfunction parseRss(xml){ const items=[]; const re=/<item[\\s>][\\s\\S]*?<\\/item>/g; let m; while((m=re.exec(xml))){ const blk=m[0]; const g=function(tag){ const r=new RegExp('<'+tag+'[^>]*>([\\\\s\\\\S]*?)<\\\\/'+tag+'>','i'); const x=r.exec(blk); return x?x[1]:''; }; items.push({ title:decode(g('title')), desc:decode(g('description')), link:decode(g('link')), traffic:decode(g('ht:approx_traffic')) }); } return items; }\nconst STOP=new Set('the,a,an,and,or,but,of,to,in,on,for,with,as,at,by,from,after,over,amid,into,onto,out,up,down,off,about,against,between,during,before,under,while,since,than,then,also,just,now,new,news,says,say,said,will,would,could,can,may,might,must,is,are,was,were,be,been,being,has,have,had,its,his,her,their,our,your,this,that,these,those,it,he,she,they,we,you,not,no,nor,more,most,least,other,others,first,last,latest,live,update,updates,video,watch,photos,pictures,how,what,why,when,where,who,which,world,europe,asia,africa,america,middle,east,al,jazeera,bbc,guardian,reuters,anadolu,agency,agencies,report,reports,reported,percent,million,billion,thousand,hundred,year,years,day,days,week,weeks,month,months,people,man,woman,men,women,one,two,three,four,five,six,seven,eight,nine,ten,dies,die,dead,death,deaths,killed,kill,kills,injured,toll,near,top,big,small,vs,de,la,le,el,none,amp,get,breaking,email,free,app,sign,newsletter,coverage,follow,blog,podcast,briefing,morning,edition,exclusive,analysis,explainer,opinion,review,listen,reading,continue,click,download,subscribe,daily,stream,story,stories,full,find,inside,behind,look,looks,need,know,everything,things,best,make,made,take,takes,taking,help,leader,leaders,chief,president,minister,ministers,government,officials,official,forces,force,court,according,country,city,state,states,told,crisis,move,call,calls,warns,warning,claims,claim,here,via,due,set'.split(','));\nfunction trmap(s){ return s.replace(/ç/g,'c').replace(/ş/g,'s').replace(/ı/g,'i').replace(/İ/g,'i').replace(/ğ/g,'g').replace(/ö/g,'o').replace(/ü/g,'u'); }\nconst ALIAS={israil:'israel',rusya:'russia',ukrayna:'ukraine',cin:'china',almanya:'germany',fransa:'france',ingiltere:'britain',abd:'us',amerika:'america',gazze:'gaza',suriye:'syria',misir:'egypt',yunanistan:'greece',hindistan:'india',japonya:'japan',kore:'korea',suudi:'saudi',arabistan:'arabia',turkiye:'turkey',nukleer:'nuclear',savas:'war',fuze:'missile',petrol:'oil',dogalgaz:'gas',bogaz:'strait',ordu:'army',saldiri:'attack',secim:'election',baskan:'president'};\nconst GEO=new Set('iran,israel,israeli,russia,russian,ukraine,ukrainian,china,chinese,turkey,turkish,syria,syrian,gaza,lebanon,yemen,iraq,egypt,saudi,arabia,qatar,emirates,libya,sudan,ethiopia,somalia,nigeria,mali,niger,algeria,morocco,tunisia,greece,cyprus,armenia,azerbaijan,georgia,kazakhstan,pakistan,india,afghanistan,bangladesh,myanmar,thailand,vietnam,philippines,indonesia,malaysia,korea,japan,taiwan,germany,france,britain,poland,romania,hungary,serbia,kosovo,bosnia,belarus,moldova,finland,sweden,norway,netherlands,spain,portugal,italy,austria,mexico,brazil,argentina,venezuela,colombia,chile,peru,cuba,haiti,canada,australia,nato,nuclear,military,missile,missiles,drone,drones,war,ceasefire,sanctions,border,treaty,summit,coup,election,elections,parliament,army,navy,defense,defence,weapons,weapon,conflict,diplomacy,embassy,intelligence,terror,terrorism,rebels,insurgents,invasion,airstrike,strikes,strike,artillery,submarine,tanker,pipeline,oil,gas,opec,strait,canal,refugee,refugees,migration,cartel,hamas,hezbollah,houthi,houthis,kremlin,pentagon,mossad,brics,putin,trump,zelensky,netanyahu,khamenei,erdogan,macron,modi,kim,tehran,moscow,kyiv,kiev,beijing,washington,ankara,jerusalem,baghdad,damascus,riyadh'.split(','));\nconst SPOR=new Set('fifa,uefa,cup,football,soccer,tennis,olympic,olympics,league,match,matches,tournament,wimbledon,goal,goals,striker,coach,club,basketball,cricket,rugby,golf,boxing,ufc,formula,prix,racing,transfer,premier,champions,playoff,nba,nfl,mlb,fixture,derby,athletics,swimming,medal,medals,player,players,team,teams,season,finals,semifinal'.split(','));\nfunction toks(s){ const raw=trmap(String(s||'').toLowerCase()).replace(/[^a-z0-9\\s-]/g,' ').split(/[\\s-]+/); const seen=new Set(); const outT=[]; for(const w0 of raw){ const w=ALIAS[w0]||w0; if(w.length>=3 && !STOP.has(w) && !/^\\d+$/.test(w) && !seen.has(w)){ seen.add(w); outT.push(w); } } return outT; }\nconst feeds=[['BBC','Kaynak BBC'],['Guardian','Kaynak Guardian'],['AlJazeera','Kaynak Al Jazeera'],['AA','Kaynak AA']];\nconst arts=[]; const feedDurum={};\nfor(const f of feeds){ const xml=grab(f[1]); const its=xml?parseRss(xml).slice(0,60):[]; feedDurum[f[0]]=its.length; for(const it of its){ if(!it.title) continue; const t=toks(it.title+' '+String(it.desc||'').slice(0,160)); if(t.length<2) continue; arts.push({src:f[0], title:it.title, link:it.link, tokens:t}); } }\nconst clusters=[];\nfunction topOf(c,n){ return Object.entries(c.tokenCount).sort(function(x,y){return y[1]-x[1];}).slice(0,n).map(function(e){return e[0];}); }\nfor(const a of arts){ let best=null,bestN=0;\n  for(const c of clusters){ let n=0; for(const t of a.tokens) if(c.ref.includes(t)) n++; if(n>bestN){ bestN=n; best=c; } }\n  if(best && bestN>=2){ best.items.push(a); best.sources.add(a.src); for(const t of a.tokens) best.tokenCount[t]=(best.tokenCount[t]||0)+1; best.ref=topOf(best,12); }\n  else { const tc={}; for(const t of a.tokens) tc[t]=1; const c={items:[a],sources:new Set([a.src]),tokenCount:tc}; c.ref=topOf(c,12); clusters.push(c); } }\nfor(const c of clusters){ c.top=topOf(c,6); c.geo=c.ref.filter(function(t){return GEO.has(t);}).length; c.spor=c.ref.filter(function(t){return SPOR.has(t);}).length; }\nclusters.sort(function(x,y){ return (y.sources.size-x.sources.size)||(y.items.length-x.items.length); });\nconst enrich=clusters.filter(function(c){ return c.geo>=1 && c.spor===0; }).slice(0,10);\nconst txml=grab('Kaynak Google Trends'); const trendsRaw=txml?parseRss(txml):[];\nconst trends=trendsRaw.map(function(t){ return { title:t.title, tokens:toks(t.title), traffic:(parseInt(String(t.traffic||'').replace(/[^0-9]/g,''),10)||0) }; });\nlet redditPosts=null;\nconst rcid=$env.REDDIT_CLIENT_ID||'', rsec=$env.REDDIT_CLIENT_SECRET||'';\nif(rcid && rsec){ try{ const tokResp=await this.helpers.httpRequest({method:'POST',url:'https://www.reddit.com/api/v1/access_token',headers:{'User-Agent':UA,'Content-Type':'application/x-www-form-urlencoded','Authorization':'Basic '+Buffer.from(rcid+':'+rsec).toString('base64')},body:'grant_type=client_credentials',json:true}); const rtok=tokResp && tokResp.access_token; if(rtok){ const rj=await this.helpers.httpRequest({method:'GET',url:'https://oauth.reddit.com/r/geopolitics+worldnews/top',qs:{t:'day',limit:100},headers:{'User-Agent':UA,'Authorization':'Bearer '+rtok},json:true}); redditPosts=((rj && rj.data && rj.data.children)||[]).map(function(ch){ return { tokens:toks(ch.data.title), score:(ch.data.ups||0)+(ch.data.num_comments||0) }; }); } }catch(e){ redditPosts=null; } }\nfunction bekle(ms){ return new Promise(function(res){ setTimeout(res,ms); }); }\nconst out=[]; let ilkSorgu=true;\nfor(const c of enrich){\n  const adaylarQ=c.ref.filter(function(t){ return t.length>=4; }).sort(function(x,y){ return (GEO.has(y)?1:0)-(GEO.has(x)?1:0); });\n  const q=adaylarQ.slice(0,2).join(' ')||c.top.slice(0,2).join(' ');\n  let domains=0; let deneme=0;\n  while(deneme<3){\n    if(!ilkSorgu) await bekle(5500);\n    ilkSorgu=false;\n    try{\n      const g=await this.helpers.httpRequest({method:'GET',url:'https://api.gdeltproject.org/api/v2/doc/doc',qs:{query:q,mode:'artlist',maxrecords:100,timespan:'1d',format:'json',sort:'hybridrel'},headers:{'User-Agent':UA},json:false});\n      const s=String(g||'');\n      if(s.indexOf('limit requests')>=0) throw new Error('gdelt-throttle');\n      const ds=new Set(); const dre=/\"domain\":\\s*\"([^\"]+)\"/g; let dm;\n      while((dm=dre.exec(s))) ds.add(dm[1]);\n      domains=ds.size; break;\n    }catch(e){ deneme++; }\n  }\n  const gBonus= domains>=20?3 : domains>=8?2 : domains>=3?1 : 0;\n  const kaynakPuan=Math.min(40,(c.sources.size+gBonus)*10);\n  let trendPuan=0, trendTerim='';\n  for(const tr of trends){ let n=0; for(const t of c.ref) if(tr.tokens.includes(t)) n++; if(n>=1){ const p= tr.traffic>=100000?30 : tr.traffic>=20000?27 : tr.traffic>=5000?23 : tr.traffic>=1000?19 : 15; if(p>trendPuan){ trendPuan=p; trendTerim=tr.title; } } }\n  let sosyalPuan=null, sosyalHam=0;\n  if(redditPosts){ for(const p of redditPosts){ let n=0; for(const t of c.ref) if(p.tokens.includes(t)) n++; if(n>=2) sosyalHam+=p.score; } sosyalPuan=Math.min(30,Math.round(10*Math.log10(1+sosyalHam))); }\n  const skor= sosyalPuan===null ? Math.round((kaynakPuan+trendPuan)/70*100) : Math.min(100,kaynakPuan+trendPuan+sosyalPuan);\n  out.push({c:c,q:q,kaynakPuan:kaynakPuan,trendPuan:trendPuan,trendTerim:trendTerim,sosyalPuan:sosyalPuan,sosyalHam:sosyalHam,domains:domains,skor:skor});\n}\nout.sort(function(a,b){ return b.skor-a.skor; });\nconst secilen=[];\nfor(const o of out){ let dup=false; for(const s of secilen){ let n=0; for(const t of o.c.top) if(s.c.top.includes(t)) n++; if(n>=3){ dup=true; break; } } if(!dup) secilen.push(o); if(secilen.length>=5) break; }\nconst tarih=new Date().toISOString().slice(0,10);\nreturn secilen.map(function(o,i){ return { json: { tarih:tarih, aday_no:i+1, temsilci_baslik:o.c.items[0].title, ornekler:o.c.items.slice(0,3).map(function(x){ return x.src+': '+x.title; }), link:o.c.items[0].link||'', anahtar_kelimeler:o.c.top.slice(0,5).join(', '), gdelt_sorgu:o.q, kaynaklar:Array.from(o.c.sources).join(', '), kaynak_sayisi:o.c.sources.size, gdelt_domain:o.domains, kaynak_puani:o.kaynakPuan, trend_puani:o.trendPuan, trend_terimi:o.trendTerim, sosyal_puani:(o.sosyalPuan===null?-1:o.sosyalPuan), sosyal_ham:o.sosyalHam, skor:o.skor, feed_durum:JSON.stringify(feedDurum) } }; });"
+      },
+      "id": "fc9b8039-d7e8-46f5-95cf-4356c1f4a030",
+      "name": "Kumele ve Skorla",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items=$input.all().map(function(i){ return i.json; });\nif(items.length===0) return [];\nconst key=$env.OPENROUTER_API_KEY;\nif(!key) throw new Error('OPENROUTER_API_KEY env degiskeni bulunamadi');\nconst ozet=items.map(function(it){ return { aday_no:it.aday_no, ragbet_skoru:it.skor, mansetler:it.ornekler, anahtar_kelimeler:it.anahtar_kelimeler, google_trends_esleseni:(it.trend_terimi||null) }; });\nconst sistem='Sen \"Jeopolitik Satranc\" adli Turkce YouTube kanalinin kidemli icerik stratejisti ve meraklandirici belgesel anlaticisisin. KANALIN GERCEK VERISINDEN CIKAN KURALLAR: (1) Manset tarzi basliklar (ornek: Amerika Irani Vurdu - Ortadogu Alev Aldi) kaybediyor; az islenmis, meraklandirici acilar (ornek: Yeralti Fuze Kompleksleri: Dunyanin En Buyuk Gizli Silah Deposu) kazaniyor. (2) Trafigin cogu YouTube ARAMASINDAN geliyor: baslikta insanlarin gercekten arayacagi somut ozel adlar (ulke, bogaz, silah sistemi, orgut, sehir) gecmeli. GOREVIN: verilen HER haber kumesi icin TEK video fikri uretmek; hicbirini atlama. HER FIKIR IKI UNSURU BIRLESTIRMELI: (a) genis kitlenin zaten merak ettigi guncel kisim, (b) objektif olarak onemli ama az anlatilan mekanizma, altyapi, tarih, lojistik veya para hikayesi. SADECE mansetlerde gecen dogrulanabilir olgulara dayan; mansetlerde olmayan olay uydurma. BASLIK KURALLARI: Turkce, 45-75 karakter, merak boslugu birakir, clickbait yalani ve tireli manset uslubu icermez, aranabilir ozel adlar icerir. ACI ALANI: EN FAZLA 3 cumle ve 350 karakter Turkce; bu acinin neden az islenmis oldugunu, hangi somut unsura dayandigini ve izleyicinin hangi sorusuna cevap vaat ettigini yaz. YANIT: SADECE gecerli JSON, baska hicbir sey yazma.';\nconst istek='Bugunun aday haber kumeleri:\\n'+JSON.stringify(ozet)+'\\n\\nTUM '+items.length+' ADAY icin su formatta yanit ver: {\"fikirler\":[{\"aday_no\":1,\"baslik\":\"...\",\"aci\":\"...\"}]}';\nconst cagir=async (mesajlar)=>{ const r=await this.helpers.httpRequest({method:'POST',url:'https://openrouter.ai/api/v1/chat/completions',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:{model:'anthropic/claude-sonnet-4.6',temperature:0.8,max_tokens:3000,messages:mesajlar},json:true}); const ch=(r&&r.choices&&r.choices[0])||{}; return (ch.message&&ch.message.content)||''; };\nfunction ayikla(t){ const s=String(t||'').replace(/```json/gi,'').replace(/```/g,''); const a=s.indexOf('{'); const b=s.lastIndexOf('}'); if(a<0||b<=a) throw new Error('JSON bulunamadi'); return JSON.parse(s.slice(a,b+1)); }\nlet fikirler=[];\nlet mesajlar=[{role:'system',content:sistem},{role:'user',content:istek}];\nfor(let dene=0;dene<3;dene++){\n  let y='';\n  try{ y=await cagir(mesajlar); const v=ayikla(y); const gelen=(v&&v.fikirler)||[]; for(const f of gelen){ const ix=fikirler.findIndex(function(x){return x.aday_no===f.aday_no;}); if(ix>=0) fikirler[ix]=f; else fikirler.push(f); } }catch(e){}\n  const eksik=items.filter(function(it){ return !fikirler.find(function(f){return f.aday_no===it.aday_no;}); }).map(function(it){return it.aday_no;});\n  if(eksik.length===0) break;\n  mesajlar=mesajlar.concat([{role:'assistant',content:String(y||'').slice(0,3000)},{role:'user',content:'Yanit eksik veya gecersizdi. Su aday_no listesi icin fikir eksik: '+JSON.stringify(eksik)+'. SADECE eksiksiz ve gecerli JSON gonder.'}]);\n}\nreturn items.map(function(it){ const f=fikirler.find(function(x){ return x.aday_no===it.aday_no; })||{}; return { json: Object.assign({}, it, { baslik:(f.baslik||it.temsilci_baslik), aci:(f.aci||'') }) }; });"
+      },
+      "id": "e8eb0250-f0eb-447a-86ad-d516b08f0d35",
+      "name": "Fikir Uret (LLM)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_DATA_TABLE_ID",
+          "cachedResultName": "trend_adaylar"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "tarih": "={{ $json.tarih }}",
+            "baslik": "={{ $json.baslik }}",
+            "aci": "={{ $json.aci }}",
+            "skor": "={{ $json.skor }}",
+            "kaynak_sayisi": "={{ $json.kaynak_sayisi }}",
+            "trend_puani": "={{ $json.trend_puani }}",
+            "sosyal_puani": "={{ $json.sosyal_puani }}",
+            "anahtar_kelimeler": "={{ $json.anahtar_kelimeler }}",
+            "ornek_manset": "={{ ($json.ornekler || [])[0] || \"\" }}",
+            "durum": "bekliyor",
+            "karar_zamani": ""
+          },
+          "schema": [
+            {
+              "id": "tarih",
+              "displayName": "tarih",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "baslik",
+              "displayName": "baslik",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "aci",
+              "displayName": "aci",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "skor",
+              "displayName": "skor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "kaynak_sayisi",
+              "displayName": "kaynak_sayisi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "trend_puani",
+              "displayName": "trend_puani",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sosyal_puani",
+              "displayName": "sosyal_puani",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "anahtar_kelimeler",
+              "displayName": "anahtar_kelimeler",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ornek_manset",
+              "displayName": "ornek_manset",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "durum",
+              "displayName": "durum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "karar_zamani",
+              "displayName": "karar_zamani",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "16da7a1e-7478-43fa-a107-36dac02cb620",
+      "name": "Adaylari Kaydet",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "trend-onay",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "id": "c6923b3d-6087-48b2-bf5d-b3d91234cf55",
+      "name": "Onay Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        832
+      ],
+      "webhookId": "00000000-0000-4000-8000-000000000001",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Telegram Secret Token (X-Telegram-Bot-Api-Secret-Token)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const token=$env.TREND_BOT_TOKEN;\nif(!token) throw new Error('TREND_BOT_TOKEN env degiskeni eksik');\nconst api='https://api.telegram.org/bot'+token;\nconst b=$json.body||{};\nconst cq=b.callback_query;\nconst msg=b.message;\n\nconst tg=async(method,body)=>{ try{ return await this.helpers.httpRequest({method:'POST',url:api+'/'+method,body,json:true}); }catch(e){ return null; } };\nconst RUN_BTN={inline_keyboard:[[{text:'▶️ Trend Araştırmasını Çalıştır',callback_data:'calistir'}]]};\nconst TETIKLENDI='🚀 Workflow tetiklendi!\\n⏳ Trend araştırması çalışıyor (~7 dk). Sonuç raporu bu sohbete gelecek.';\nconst HATA='⚠️ Tetikleme başarısız oldu, biraz sonra tekrar dener misin?';\nconst tetikle=async()=>{\n  const urls=['http://127.0.0.1:5678/webhook/trend-calistir-718e1213668c']; let publicUrl=$env.N8N_PUBLIC_URL||''; if(publicUrl.endsWith('/')) publicUrl=publicUrl.slice(0,-1); if(publicUrl) urls.push(publicUrl+'/webhook/trend-calistir-718e1213668c');\n  const secret=$env.TREND_WEBHOOK_SECRET||''; for(const u of urls){ try{ await this.helpers.httpRequest({method:'GET',url:u,timeout:10000,headers:(secret?{'X-Webhook-Secret':secret}:{})}); return true; }catch(e){} }\n  return false;\n};\n\n// --- Metin mesaji: calistir komutu ya da menu ---\nif(msg && !cq){\n  const chatId=msg.chat && msg.chat.id;\n  if(!chatId) return [];\n  const t=String(msg.text||'').toLowerCase();\n  const runIstek=/calistir|çalıştır|çalistir|calıştır|baslat|başlat|\\/trend|\\/run/.test(t);\n  if(runIstek){\n    const ok=await tetikle();\n    await tg('sendMessage',{chat_id:chatId,text:(ok?TETIKLENDI:HATA),reply_markup:RUN_BTN});\n  } else {\n    await tg('sendMessage',{chat_id:chatId,text:'📋 Jeopolitik Trend Araştırma\\n\\nAşağıdaki butonla istediğin an çalıştırabilirsin; “çalıştır” yazman da yeterli. Her sabah 08:00\\'de otomatik da çalışır.',reply_markup:RUN_BTN});\n  }\n  return [];\n}\n\nif(!cq) return [];\n\n// --- Calistir butonu ---\nif(String(cq.data||'')==='calistir'){\n  await tg('answerCallbackQuery',{callback_query_id:cq.id,text:'🚀 Workflow tetiklendi'});\n  const ok=await tetikle();\n  const chatId=cq.message && cq.message.chat && cq.message.chat.id;\n  if(chatId) await tg('sendMessage',{chat_id:chatId,text:(ok?TETIKLENDI:HATA)});\n  return [];\n}\n\n// --- ok/no karar butonlari (mevcut mantik) ---\nconst m=/^(ok|no):(\\d+)$/.exec(String(cq.data||''));\nconst onay=!!(m && m[1]==='ok');\nawait tg('answerCallbackQuery',{callback_query_id:cq.id,text:(m?(onay?'✅ Kaydedildi':'❌ Reddedildi'):'Anlasilamadi')});\nif(!m) return [];\nconst suffix=onay?'\\n\\n✅ ONAYLANDI — kaydedildi (Faz 1: uretim tetiklenmez)':'\\n\\n❌ REDDEDILDI — kaydedildi';\nawait tg('editMessageText',{chat_id:cq.message.chat.id,message_id:cq.message.message_id,text:String(cq.message.text||'')+suffix});\nreturn [{json:{rowId:m[2],durum:(onay?'onaylandi':'reddedildi'),karar_zamani:new Date().toISOString()}}];"
+      },
+      "id": "3bb16b1f-7942-4c6e-859c-a9b3a85bb00f",
+      "name": "Karari Isle",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_DATA_TABLE_ID",
+          "cachedResultName": "trend_adaylar"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.rowId }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "durum": "={{ $json.durum }}",
+            "karar_zamani": "={{ $json.karar_zamani }}"
+          },
+          "schema": [
+            {
+              "id": "durum",
+              "displayName": "durum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "karar_zamani",
+              "displayName": "karar_zamani",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7e217149-a381-476b-ba6d-132ef87482c8",
+      "name": "Karari Kaydet",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -64,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Faz 1 - Trend Arastirma\nHer sabah 08:00 TR: 4 haber feedi + Google Trends TR cekilir, kumelenip GDELT + Reddit (opsiyonel) ile capraz dogrulanir, Ragbet Skoru (kaynak 0-40 + trend 0-30 + sosyal 0-30) hesaplanir, LLM meraklandirici baslik + aci uretir, Telegram trend botuna Onayla/Reddet butonlariyla gonderilir.\n\nGerekli env: TREND_BOT_TOKEN, TREND_CHAT_ID, OPENROUTER_API_KEY. Opsiyonel: REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET (yoksa skor kaynak+trend uzerinden normalize edilir), N8N_PUBLIC_URL (calistir webhookunun disaridan da erisilebilir tam adresi; sadece localhost yeterliyse bos birakilabilir), TREND_WEBHOOK_SECRET (Calistir Webhook'u tetikleyen istege eklenen paylasilan sir). GUVENLIK: iki webhook node'unda da authentication=headerAuth aciktir; import sonrasi n8n'de iki ayri 'Header Auth' credential olusturup ilgili node'a atamalisin (credential degerleri disa aktarilmadigi icin JSON'da yoktur, elle girilmelidir) - Onay Webhook icin header adi X-Telegram-Bot-Api-Secret-Token (Telegram setWebhook cagrisina ayni degeri secret_token parametresi olarak eklemelisin), Calistir Webhook icin header adi X-Webhook-Secret (degeri TREND_WEBHOOK_SECRET ortam degiskeniyle ayni olmali).",
+        "height": 200,
+        "width": 1800
+      },
+      "id": "5ef44148-9f17-4b38-a703-bf7248805d5e",
+      "name": "Sticky Note 1071fcb7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        -448
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Onay hatti (Faz 1: sadece log)\nTelegram butonu -> bu webhook (setWebhook ile bagli) -> cevap + mesaj guncelleme -> trend_adaylar tablosunda durum guncellenir. Uretim workflowu ([uretim-workflow-id]) tetiklenmez; Faz 2de Execute Workflow buraya eklenecek.",
+        "height": 200,
+        "width": 840
+      },
+      "id": "266aecf9-a712-47c9-998c-1cb53226cef5",
+      "name": "Sticky Note dab28e7a",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        1136
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "2e223bf1-47f5-4c76-a49d-21d97cac879a",
+      "name": "Manuel Tetik",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "path": "trend-calistir-718e1213668c",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "id": "7e781c29-8bbc-4027-a4d5-3f04bf99f21b",
+      "name": "Calistir Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        624
+      ],
+      "webhookId": "00000000-0000-4000-8000-000000000002",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Trend Webhook Secret (X-Webhook-Secret)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const token=$env.TREND_BOT_TOKEN, chat=$env.TREND_CHAT_ID;\nif(!token||!chat) throw new Error('TREND_BOT_TOKEN veya TREND_CHAT_ID env degiskeni eksik');\nconst rows=$input.all().map(function(i){ return i.json; });\nconst fikirler=$(\"Fikir Uret (LLM)\").all().map(function(i){ return i.json; });\nfunction esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }\nconst api='https://api.telegram.org/bot'+token;\nconst tarih=fikirler.length?fikirler[0].tarih:'';\nconst MADALYA=['🥇','🥈','🥉','4️⃣','5️⃣'];\nfunction ates(s){ return s>=60?'🔥🔥🔥':(s>=40?'🔥🔥':'🔥'); }\nawait this.helpers.httpRequest({method:'POST',url:api+'/sendMessage',body:{chat_id:chat,text:'🌍📡 <b>JEOPOLİTİK TREND RAPORU</b>\\n🗓 '+tarih+'\\n\\n🎯 <b>'+fikirler.length+' aday</b> bulundu — Rağbet Skoru sırasıyla aşağıda.\\n👇 Her adayın altındaki butonla karar ver: ✅ Onayla · ❌ Reddet',parse_mode:'HTML'},json:true});\nconst sonuc=[];\nfor(let i=0;i<fikirler.length;i++){\n  const f=fikirler[i];\n  const rowId=(rows[i]&&rows[i].id!==undefined)?rows[i].id:('x'+i);\n  const madalya=MADALYA[i]||('#'+(i+1));\n  const trendSatir=f.trend_terimi?('📈 Google Gündemi (Trends): <b>'+f.trend_puani+'/30</b> — “'+esc(f.trend_terimi)+'” Türkiye\\'de aranıyor 🚀'):('📈 Google Gündemi (Trends): <b>0/30</b> — TR aramalarında henüz patlamamış 💤');\n  const sosyalSatir=(f.sosyal_puani>=0)?('👥 Sosyal Medya (Reddit): <b>'+f.sosyal_puani+'/30</b>'):('👥 Sosyal Medya (Reddit): ⛔ kapalı — skora dahil edilmiyor');\n  const text=madalya+' <b>ADAY '+(i+1)+'</b> · Rağbet Skoru: <b>%'+f.skor+'</b> '+ates(f.skor)\n    +'\\n➖➖➖➖➖➖➖➖➖➖'\n    +'\\n🎬 <b>'+esc(f.baslik)+'</b>'\n    +'\\n\\n💡 <i>'+esc(f.aci)+'</i>'\n    +'\\n\\n📊 <b>Skor Dökümü</b>'\n    +'\\n📰 Haber Kaynakları (Feed / Akış): <b>'+f.kaynak_puani+'/40</b> — '+f.kaynak_sayisi+' kaynak: '+esc(f.kaynaklar)\n    +'\\n🌍 Küresel Yayılım (GDELT): <b>'+f.gdelt_domain+'</b> farklı haber sitesi yazmış'\n    +'\\n'+trendSatir\n    +'\\n'+sosyalSatir\n    +'\\n\\n🗞 Örnek manşet: '+esc((f.ornekler||[])[0]||'')\n    +'\\n🏷 Anahtar kelimeler: '+esc(f.anahtar_kelimeler||'')\n    +'\\n🔗 '+esc(f.link||'');\n  const body={chat_id:chat,text:text,parse_mode:'HTML',link_preview_options:{is_disabled:true},reply_markup:{inline_keyboard:[[{text:'✅ Onayla',callback_data:'ok:'+rowId},{text:'❌ Reddet',callback_data:'no:'+rowId}]]}};\n  const r=await this.helpers.httpRequest({method:'POST',url:api+'/sendMessage',body:body,json:true});\n  sonuc.push({json:{gonderildi:true,message_id:(r&&r.result&&r.result.message_id)||null,rowId:rowId,baslik:f.baslik,skor:f.skor}});\n}\nreturn sonuc;"
+      },
+      "id": "45259771-ab6e-4c75-9298-7405d3e24c62",
+      "name": "Telegram Rapor Gonder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        304
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gunluk Tetik 08:00": {
+      "main": [
+        [
+          {
+            "node": "Kaynak BBC",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak Guardian",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak Al Jazeera",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak AA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak Google Trends",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kaynak BBC": {
+      "main": [
+        [
+          {
+            "node": "Kaynaklari Birlestir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kaynaklari Birlestir": {
+      "main": [
+        [
+          {
+            "node": "Kumele ve Skorla",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kaynak Guardian": {
+      "main": [
+        [
+          {
+            "node": "Kaynaklari Birlestir",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Kaynak Al Jazeera": {
+      "main": [
+        [
+          {
+            "node": "Kaynaklari Birlestir",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Kaynak AA": {
+      "main": [
+        [
+          {
+            "node": "Kaynaklari Birlestir",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Kaynak Google Trends": {
+      "main": [
+        [
+          {
+            "node": "Kaynaklari Birlestir",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Kumele ve Skorla": {
+      "main": [
+        [
+          {
+            "node": "Fikir Uret (LLM)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fikir Uret (LLM)": {
+      "main": [
+        [
+          {
+            "node": "Adaylari Kaydet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Onay Webhook": {
+      "main": [
+        [
+          {
+            "node": "Karari Isle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Karari Isle": {
+      "main": [
+        [
+          {
+            "node": "Karari Kaydet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manuel Tetik": {
+      "main": [
+        [
+          {
+            "node": "Kaynak BBC",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak Guardian",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak Al Jazeera",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak AA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak Google Trends",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calistir Webhook": {
+      "main": [
+        [
+          {
+            "node": "Kaynak BBC",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak Guardian",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak Al Jazeera",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak AA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Kaynak Google Trends",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adaylari Kaydet": {
+      "main": [
+        [
+          {
+            "node": "Telegram Rapor Gonder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "542202c6-ade2-4de2-a492-3a702365b500",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "nodeGroups": [],
+  "tags": []
+}
